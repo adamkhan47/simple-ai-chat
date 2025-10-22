@@ -5,15 +5,17 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const WebSocket = require('ws');
 const http = require('http');
-import OpenAI from 'openai';
+const OpenAI = require("openai").default;
 require('dotenv').config();
 
 
 server = http.createServer(app);
+
 const openai = new OpenAI({
-  apiKey: '$API_KEY_REQUIRED_IF_EXECUTING_OUTSIDE_NGC',
-  baseURL: 'https://integrate.api.nvidia.com/v1',
+    apiKey: process.env.API_KEY,
+    baseURL: 'https://integrate.api.nvidia.com/v1',
 })
+
 
 
 const fileContents = fs.readFileSync('config.yaml', 'utf8');
@@ -28,9 +30,10 @@ else if (LISTENING === "all") {LISTENING = '0.0.0.0'}
 
 const betterConsole = config.alerts;
 
-
+let clientGlobal;
 const wss = new WebSocket.Server({ server});
 wss.on('connection', function connection(ws) {
+    clientGlobal = ws;
     ws.on('message', function incoming(message) {
         const data = JSON.parse(message);
         if (betterConsole) {console.log('received: %s', message);}
@@ -41,9 +44,13 @@ wss.on('connection', function connection(ws) {
                     let timeString = now.toLocaleTimeString();
                     client.send(JSON.stringify({
                         type: "messages",
+                        user: "User: ",
+                        ai: false,
                         contents: data.contents,
+                        chatHistory: data.chatHistory,
                         time: timeString
                     }));
+                    chat(data.contents, data.chatHistory);
                     if(betterConsole) {console.log("sent message")};
 
                 }
@@ -51,6 +58,36 @@ wss.on('connection', function connection(ws) {
         });
     });
 });
+
+async function chat(history) {
+    console.log("Got a question..");
+    const completion = await openai.chat.completions.create({
+        model: "deepseek-ai/deepseek-v3.1",
+        messages: history,
+        temperature: 0.9,
+        top_p: 0.7,
+        max_tokens: 8192,
+        chat_template_kwargs: { thinking: true },
+        stream: true
+    });
+
+    let fullOutput = '';
+    for await (const chunk of completion) {
+        fullOutput += chunk.choices[0]?.delta?.content || '';
+    }
+
+    let now = new Date();
+    let timeString = now.toLocaleTimeString();
+    clientGlobal.send(JSON.stringify({
+        type: "messages",
+        user: "AI",
+        ai: true,
+        contents: fullOutput,
+        time: timeString
+    }));
+}
+
+
 
 
 app.use(express.static(path.join(__dirname, "public")));
