@@ -1,11 +1,14 @@
 let protocol = (location.protocol === "https:") ? "wss://" : "ws://";
 let socket = new WebSocket(protocol + location.host);
+let doNotSend = false;
 
 let history = [
     { role: "system", content: "You are a helpful assistant." }
 ];
 
 function send() {
+    if (doNotSend) {alert ("Wait for the response to finish!"); return;}
+    doNotSend = true;
     history.push({ role: "user", content: document.getElementById("inputText").value });
     socket.send(JSON.stringify({
         type: "message",
@@ -34,6 +37,9 @@ socket.onmessage = function(event) {
             text = lines.join("<br>");
             document.getElementById("messages").innerHTML = text;
         }
+    }
+    else if (data.type === "stop") {
+        doNotSend = false;
     }
 }
 socket.onclose = function(event) {

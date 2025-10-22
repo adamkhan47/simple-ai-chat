@@ -95,6 +95,9 @@ async function chat(contents, history) {
             }));
         }
     }
+    clientGlobal.send(JSON.stringify({
+        type: "stop"
+    }));
 }
 
 
