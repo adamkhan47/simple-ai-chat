@@ -21,6 +21,28 @@ else if (LISTENING === "all") {LISTENING = '0.0.0.0'}
 const betterConsole = config.alerts;
 
 
+const wss = new WebSocket.Server({ server});
+wss.on('connection', function connection(ws) {
+    ws.on('message', function incoming(message) {
+        const data = JSON.parse(message);
+        if (betterConsole) {console.log('received: %s', message);}
+        wss.clients.forEach(function each(client) {
+            if (client.readyState === WebSocket.OPEN) {
+                if (data.type === "message") {
+                    let now = new Date();
+                    let timeString = now.toLocaleTimeString();
+                    client.send(JSON.stringify({
+                        type: "messages",
+                        contents: data.contents,
+                        time: timeString
+                    }));
+                    if(betterConsole) {console.log("sent message")};
+                }
+            }
+        });
+    });
+});
+
 
 app.use(express.static(path.join(__dirname, "public")));
 
