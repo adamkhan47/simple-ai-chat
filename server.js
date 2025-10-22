@@ -62,17 +62,18 @@ function currentTime() {
     return timeString;
 }
 
+let model = "deepseek-ai/deepseek-v3.1";
 async function chat(contents, history) {
     console.log("Got a question..");
     clientGlobal.send(JSON.stringify({
         type: "streaming",
-        user: "AI",
+        user: model,
         ai: true,
         contents: "INIT",
         time: currentTime()
     }));
     const completion = await openai.chat.completions.create({
-        model: "deepseek-ai/deepseek-v3.1",
+        model: model,
         messages: history,
         temperature: 0.9,
         top_p: 0.7,
@@ -88,7 +89,7 @@ async function chat(contents, history) {
             fullOutput += delta;
             clientGlobal.send(JSON.stringify({ 
                 type: "streaming",
-                user: "AI",
+                user: model,
                 ai: true,
                 contents: delta,
                 time: currentTime()

@@ -28,7 +28,7 @@ socket.onmessage = function(event) {
     }
     else if (data.type === "streaming") {
         if (data.contents === "INIT") {
-            document.getElementById("messages").innerHTML = "AI: " + '<br>' + document.getElementById("messages").innerHTML;
+            document.getElementById("messages").innerHTML = (data.user + ": (" + data.time + "): " + '<br>' + document.getElementById("messages").innerHTML);
         }
         else {
             let text = document.getElementById("messages").innerHTML;
