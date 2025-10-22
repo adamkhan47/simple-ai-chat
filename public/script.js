@@ -1,4 +1,4 @@
-if (location.protocol === "https:") { protocol = "wss://";} else {protocol = "ws://";}
+let protocol = (location.protocol === "https:") ? "wss://" : "ws://";
 let socket = new WebSocket(protocol + location.host);
 
 let history = [
@@ -13,9 +13,6 @@ function send() {
         contents: document.getElementById("inputText").value,
         chatHistory: history
     }));
-    if (autoclear) {
-        document.getElementById("inputText").value = "";
-    }
 }
 
 
@@ -25,8 +22,17 @@ socket.onmessage = function(event) {
         let message = "";
         message = data.user + " (" + data.time + "): " + data.contents;
         document.getElementById("messages").innerHTML = message + '<br>' + document.getElementById("messages").innerHTML;
-        if (data.ai === true) {
-            history.push({ role: "assistant", content: data.contents });
+    }
+    else if (data.type === "streaming") {
+        if (data.contents === "INIT") {
+            document.getElementById("messages").innerHTML = "AI: " + '<br>' + document.getElementById("messages").innerHTML;
+        }
+        else {
+            let text = document.getElementById("messages").innerHTML;
+            let lines = text.split("<br>");
+            lines[0] += data.contents;
+            text = lines.join("<br>");
+            document.getElementById("messages").innerHTML = text;
         }
     }
 }

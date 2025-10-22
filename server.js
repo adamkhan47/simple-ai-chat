@@ -40,15 +40,13 @@ wss.on('connection', function connection(ws) {
         wss.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
                 if (data.type === "message") {
-                    let now = new Date();
-                    let timeString = now.toLocaleTimeString();
                     client.send(JSON.stringify({
                         type: "messages",
                         user: "User: ",
                         ai: false,
                         contents: data.contents,
                         chatHistory: data.chatHistory,
-                        time: timeString
+                        time: currentTime()
                     }));
                     chat(data.contents, data.chatHistory);
                     if(betterConsole) {console.log("sent message")};
@@ -58,9 +56,21 @@ wss.on('connection', function connection(ws) {
         });
     });
 });
+function currentTime() {
+    let now = new Date();
+    let timeString = now.toLocaleTimeString();
+    return timeString;
+}
 
-async function chat(history) {
+async function chat(contents, history) {
     console.log("Got a question..");
+    clientGlobal.send(JSON.stringify({
+        type: "streaming",
+        user: "AI",
+        ai: true,
+        contents: "INIT",
+        time: currentTime()
+    }));
     const completion = await openai.chat.completions.create({
         model: "deepseek-ai/deepseek-v3.1",
         messages: history,
@@ -73,18 +83,18 @@ async function chat(history) {
 
     let fullOutput = '';
     for await (const chunk of completion) {
-        fullOutput += chunk.choices[0]?.delta?.content || '';
+        const delta = chunk.choices[0]?.delta?.content || '';
+        if (delta) {
+            fullOutput += delta;
+            clientGlobal.send(JSON.stringify({ 
+                type: "streaming",
+                user: "AI",
+                ai: true,
+                contents: delta,
+                time: currentTime()
+            }));
+        }
     }
-
-    let now = new Date();
-    let timeString = now.toLocaleTimeString();
-    clientGlobal.send(JSON.stringify({
-        type: "messages",
-        user: "AI",
-        ai: true,
-        contents: fullOutput,
-        time: timeString
-    }));
 }
 
 
