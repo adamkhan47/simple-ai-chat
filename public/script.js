@@ -6,6 +6,18 @@ let history = [
     { role: "system", content: "You are a helpful assistant." }
 ];
 
+window.onload = function() {
+    if (localStorage.getItem("saveInStorage") === "true") {
+        if (localStorage.getItem("save") === "" || localStorage.getItem("save") === "null" || localStorage.getItem("save") === null) {}
+        else {
+            document.getElementById("messages").innerHTML = localStorage.getItem("save");
+            history = JSON.parse(localStorage.getItem("history"));
+        }
+    }
+    localStorage.setItem("saveInStorage","false");
+};
+
+
 function send() {
     if (doNotSend) {alert ("Wait for the response to finish!"); return;}
     doNotSend = true;
@@ -17,6 +29,19 @@ function send() {
         chatHistory: history
     }));
 }
+function save() {
+    localStorage.setItem("save",document.getElementById("messages").innerHTML);
+    localStorage.setItem("saveInStorage","true");
+    localStorage.setItem("history", JSON.stringify(history));
+}
+function clearSaveFunc() {
+    localStorage.removeItem("save");
+    localStorage.removeItem("saveInStorage");
+    localStorage.removeItem("history");
+    localStorage.setItem("DELETESAVE", "yes");
+    alert("Removed save!");
+}
+
 
 
 socket.onmessage = function(event) {
