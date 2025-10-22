@@ -5,8 +5,16 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const WebSocket = require('ws');
 const http = require('http');
+import OpenAI from 'openai';
+require('dotenv').config();
+
 
 server = http.createServer(app);
+const openai = new OpenAI({
+  apiKey: '$API_KEY_REQUIRED_IF_EXECUTING_OUTSIDE_NGC',
+  baseURL: 'https://integrate.api.nvidia.com/v1',
+})
+
 
 const fileContents = fs.readFileSync('config.yaml', 'utf8');
 const config = yaml.load(fileContents);
@@ -37,6 +45,7 @@ wss.on('connection', function connection(ws) {
                         time: timeString
                     }));
                     if(betterConsole) {console.log("sent message")};
+
                 }
             }
         });
