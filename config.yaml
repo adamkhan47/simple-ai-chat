@@ -1,0 +1,8 @@
+port: 80 # do NOT use HTTP on port 443
+
+listen: "all" 
+# options: all, local
+# local:
+# all: is if you want every device to be able to access this
+
+alerts: true # better console.logs

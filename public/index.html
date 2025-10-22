@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">    
+    <title>AI Chat App</title>
+</head>
+<body>
+    <h1>AI Chat App</h1> 
+    <h1 id="status">🔴</h1>
+    <br>
+    <button onclick="setUser()">Set Username</button> <h2 id="user"></h2> <br> <br>
+    <textarea id="inputText" name="inputText" rows="4" cols="50"></textarea> <br> <br>
+    <button onclick="send()">Send</button> 
+
+    <br> <br>
+    <h3 id="messages"></h3>
+
+    <script src="script.js"></script>   
+</body>
+</html>
